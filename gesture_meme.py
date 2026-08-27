@@ -29,9 +29,34 @@ Press q or ESC to quit.
 """
 
 import math
+import os
 import random
+import sys
 import time
 from pathlib import Path
+
+# Silence noisy low-level C++ logs (MediaPipe / TensorFlow Lite / Qt)
+os.environ.setdefault("GLOG_minloglevel", "3")
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("QT_LOGGING_RULES", "qt.qpa.*=false;qt.fontdatabase=false;*.warning=false")
+if Path("/usr/share/fonts").exists() and not os.environ.get("QT_QPA_FONTDIR"):
+    os.environ["QT_QPA_FONTDIR"] = "/usr/share/fonts"
+
+
+def _silence_c_stderr() -> None:
+    """Redirect C-level file descriptor 2 (stderr) to /dev/null to silence
+    verbose C++ glog / MediaPipe / Qt warnings while preserving Python sys.stderr."""
+    try:
+        real_stderr_fd = os.dup(2)
+        sys.stderr = open(real_stderr_fd, "w", buffering=1, encoding="utf-8", closefd=False)
+        devnull_fd = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull_fd, 2)
+        os.close(devnull_fd)
+    except Exception:
+        pass
+
+
+_silence_c_stderr()
 
 import cv2
 import numpy as np

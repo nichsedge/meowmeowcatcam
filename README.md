@@ -30,19 +30,23 @@ Meme images live in `memes/`. A couple of gestures pick randomly between multipl
 
 ## Running it — desktop (Python)
 
-Requires Python 3 and a webcam.
+Requires Python 3.11+ (managed automatically by `uv`) and a webcam.
 
-Easiest way: just double-click **`Launch Gesture Meme.command`**. First run takes a minute to set itself up (installs everything automatically), then launches straight away. Every run after that is instant.
+Easiest way: just double-click **`Launch Gesture Meme.command`**. First run takes a moment to sync dependencies automatically via `uv`, then launches straight away.
 
 **First time opening it:** macOS will warn "cannot be opened because it is from an unidentified developer" — this is normal for any downloaded script, not specific to this one. Right-click the file → **Open** → click **Open** in the dialog that appears. You only need to do this once.
 
-Or manually, if you prefer Terminal:
+Or via Terminal:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python3 gesture_meme.py
+uv sync
+uv run gesture_meme.py
+```
+
+Alternatively, you can run the CLI entry point directly:
+
+```bash
+uv run meowmeowcatcam
 ```
 
 Press `q` or `Esc` in the Camera window to quit.
@@ -52,7 +56,7 @@ Press `q` or `Esc` in the Camera window to quit.
 No install needed, but the webcam API requires serving over HTTP (opening `index.html` directly as a `file://` URL will not get camera permission). From this folder:
 
 ```bash
-python3 -m http.server 8000
+uv run -m http.server 8000
 ```
 
 Then open `http://localhost:8000` and allow camera access. Models load from Google's hosted MediaPipe CDN at runtime, so nothing local is needed for the browser version.
@@ -76,5 +80,6 @@ app.js            browser version (MediaPipe tasks-vision WASM)
 index.html        browser UI shell
 memes/            meme images (+ one video, unused for now)
 models/           MediaPipe .task model files used by the desktop version
-requirements.txt  Python dependencies
+pyproject.toml    Project configuration and dependencies
+uv.lock           Lockfile for reproducible environments
 ```
